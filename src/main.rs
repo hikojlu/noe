@@ -68,6 +68,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .iter()
                 .filter_map(|Note { number, text, done }| {
                     if !done || all {
+                        // check if win cmd is ANSI
+                        let text = if *done { "//DONE\n".to_owned() + text } else { text.to_owned() };
                         Some((number, text))
                     } else {
                         None
