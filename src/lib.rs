@@ -36,7 +36,7 @@ impl Handle {
 
         Ok(Notes { notes })
     }
-    pub fn new_note(&mut self, text: String, number: Option<u16>) -> Result<u16> {
+    pub fn new_note(&self, text: String, number: Option<u16>) -> Result<u16> {
         let number = {
             let mut stmt = self.conn.prepare("SELECT number FROM notes")?;
 
@@ -58,21 +58,21 @@ impl Handle {
         )?;
         Ok(number)
     }
-    pub fn done_note(&mut self, number: u16) -> Result<()> {
+    pub fn done_note(&self, number: u16) -> Result<()> {
         self.conn.execute(
             "UPDATE notes SET done = ?1 WHERE number = ?2",
             params![true, number],
         )?;
         Ok(())
     }
-    pub fn undone_note(&mut self, number: u16) -> Result<()> {
+    pub fn undone_note(&self, number: u16) -> Result<()> {
         self.conn.execute(
             "UPDATE notes SET done = ?1 WHERE number = ?2",
             params![false, number],
         )?;
         Ok(())
     }
-    pub fn remove_note(&mut self, number: u16) -> Result<()> {
+    pub fn remove_note(&self, number: u16) -> Result<()> {
         self.conn
             .execute("DELETE FROM notes WHERE number = ?1", params![number])?;
         Ok(())

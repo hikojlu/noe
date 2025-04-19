@@ -64,7 +64,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         (file_buf, args.command)
     };
 
-    let mut handle = Handle::open(&file)?;
+    let handle = Handle::open(&file)?;
 
     match command {
         Command::List {
@@ -84,6 +84,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .map(|(n, txt, done)| {
                     let done = if *done { " done!" } else { "" };
                     let note = txt.replace("\\n", "\n");
+
                     format!("  #{n}:{done}\n") + &note + &"\n"
                 })
                 .collect::<String>();
