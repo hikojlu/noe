@@ -20,9 +20,6 @@ struct Args {
     #[arg(short, long)]
     file: Option<PathBuf>,
 
-    #[arg(short, long)]
-    verbose: bool,
-
     #[command(subcommand)]
     command: Option<Command>,
 }
@@ -47,7 +44,7 @@ enum Command {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let (file, command, verbose) = {
+    let (file, command) = {
         let args = Args::parse();
         let file_buf = args.file.unwrap_or_else(|| home_dir().expect("homeless"));
         let file_buf = if file_buf.is_dir() {
@@ -55,7 +52,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } else {
             file_buf
         };
-        (file_buf, args.command.unwrap(), args.verbose)
+        (file_buf, args.command.unwrap())
     };
 
     let mut handle = Handle::open(file)?;
@@ -82,21 +79,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Command::New { note, number } => {
             let number = handle.new_note(note, number)?;
-            if verbose {
-                println!("Added note #{number}")
-            }
+            println!("Added note #{number}")
         }
         Command::Done { number } => {
             handle.done_note(number)?;
-            if verbose {
-                println!("Marked note #{number} done")
-            }
+            println!("Marked note #{number} done")
         }
         Command::Remove { number } => {
             handle.remove_note(number)?;
-            if verbose {
-                println!("Removed note #{number}")
-            }
+            println!("Removed note #{number}")
         }
     }
     Ok(())
