@@ -1,8 +1,8 @@
 use clap::{Parser, Subcommand};
 use home::home_dir;
 use noe::*;
-use std::path::PathBuf;
 use std::fs;
+use std::path::PathBuf;
 
 const DEFAULT_FILENAME: &'static str = ".notes.db";
 
@@ -34,7 +34,7 @@ enum Command {
         all: bool,
         /// list only done notes
         #[arg(short, long)]
-        done: bool
+        done: bool,
     },
     /// Create a note
     New {
@@ -67,18 +67,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut handle = Handle::open(&file)?;
 
     match command {
-        Command::List { all, done: only_done } => {
+        Command::List {
+            all,
+            done: only_done,
+        } => {
             let out = handle
                 .list_notes()?
                 .as_vec()
                 .iter()
-                .filter_map(|Note { number, text, done }| {
-                    match (all, done, only_done) {
-                        (true, ..) => Some((number, text, done)),
-                        (.., true, true) => Some((number, text, done)),
-                        (.., false, false) => Some((number, text, done)),
-                        _ => None,
-                    }
+                .filter_map(|Note { number, text, done }| match (all, done, only_done) {
+                    (true, ..) => Some((number, text, done)),
+                    (.., true, true) => Some((number, text, done)),
+                    (.., false, false) => Some((number, text, done)),
+                    _ => None,
                 })
                 .map(|(n, txt, done)| {
                     let done = if *done { " done!" } else { "" };
