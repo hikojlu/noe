@@ -1,0 +1,10 @@
+[package]
+name = "noe"
+version = "1.0.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.5.35", features = ["derive"] }
+home = "0.5.11"
+rusqlite = { version = "0.34.0", features = ["bundled"] }
+
