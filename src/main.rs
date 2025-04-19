@@ -29,8 +29,12 @@ struct Args {
 enum Command {
     /// List notes
     List {
+        /// list all notes
         #[arg(short, long)]
         all: bool,
+        /// list only done notes
+        #[arg(short, long)]
+        done: bool
     },
     /// Create a note
     New {
@@ -40,6 +44,8 @@ enum Command {
     },
     /// Mark note done
     Done { number: u16 },
+    /// Mark note undone
+    Undone { number: u16 },
     /// Remove note
     Remove { number: u16 },
     /// Clean all notes
@@ -61,23 +67,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut handle = Handle::open(&file)?;
 
     match command {
-        Command::List { all } => {
+        Command::List { all, done: only_done } => {
             let out = handle
                 .list_notes()?
                 .as_vec()
                 .iter()
                 .filter_map(|Note { number, text, done }| {
-                    if !done || all {
-                        // check if win cmd is ANSI
-                        let text = if *done { "//DONE\n".to_owned() + text } else { text.to_owned() };
-                        Some((number, text))
-                    } else {
-                        None
+                    match (all, done, only_done) {
+                        (true, ..) => Some((number, text, done)),
+                        (.., true, true) => Some((number, text, done)),
+                        (.., false, false) => Some((number, text, done)),
+                        _ => None,
                     }
                 })
-                .map(|(n, txt)| {
+                .map(|(n, txt, done)| {
+                    let done = if *done { " done!" } else { "" };
                     let note = txt.replace("\\n", "\n");
-                    format!("  #{n}:\n") + &note + &"\n"
+                    format!("  #{n}:{done}\n") + &note + &"\n"
                 })
                 .collect::<String>();
             print!("{}", out);
@@ -89,6 +95,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Command::Done { number } => {
             handle.done_note(number)?;
             println!("Marked note #{number} done")
+        }
+        Command::Undone { number } => {
+            handle.undone_note(number)?;
+            println!("Marked note #{number} undone")
         }
         Command::Remove { number } => {
             handle.remove_note(number)?;

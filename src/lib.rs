@@ -65,6 +65,13 @@ impl Handle {
         )?;
         Ok(())
     }
+    pub fn undone_note(&mut self, number: u16) -> Result<()> {
+        self.conn.execute(
+            "UPDATE notes SET done = ?1 WHERE number = ?2",
+            params![false, number],
+        )?;
+        Ok(())
+    }
     pub fn remove_note(&mut self, number: u16) -> Result<()> {
         self.conn
             .execute("DELETE FROM notes WHERE number = ?1", params![number])?;
