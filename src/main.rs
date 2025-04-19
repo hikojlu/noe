@@ -22,7 +22,7 @@ struct Args {
     file: Option<PathBuf>,
 
     #[command(subcommand)]
-    command: Option<Command>,
+    command: Command,
 }
 
 #[derive(Debug, Subcommand)]
@@ -55,7 +55,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } else {
             file_buf
         };
-        (file_buf, args.command.unwrap())
+        (file_buf, args.command)
     };
 
     let mut handle = Handle::open(&file)?;
