@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 use home::home_dir;
 use noe::*;
 use std::path::PathBuf;
+use std::fs;
 
 const DEFAULT_FILENAME: &'static str = ".notes.db";
 
@@ -41,6 +42,8 @@ enum Command {
     Done { number: u16 },
     /// Remove note
     Remove { number: u16 },
+    /// Clean all notes
+    Explode,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -55,7 +58,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         (file_buf, args.command.unwrap())
     };
 
-    let mut handle = Handle::open(file)?;
+    let mut handle = Handle::open(&file)?;
 
     match command {
         Command::List { all } => {
@@ -88,6 +91,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Command::Remove { number } => {
             handle.remove_note(number)?;
             println!("Removed note #{number}")
+        }
+        Command::Explode => {
+            fs::remove_file(&file)?;
+            println!("Notes exploded")
         }
     }
     Ok(())

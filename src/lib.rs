@@ -1,12 +1,12 @@
 use rusqlite::{Connection, Result, params};
-use std::path::PathBuf;
+use std::path::Path;
 
 pub struct Handle {
     conn: Connection,
 }
 
 impl Handle {
-    pub fn open(path: PathBuf) -> Result<Self> {
+    pub fn open<T: AsRef<Path>>(path: T) -> Result<Self> {
         let conn = Connection::open(path)?;
         conn.execute(
             "CREATE TABLE IF NOT EXISTS notes (
