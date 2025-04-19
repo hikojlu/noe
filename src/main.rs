@@ -29,10 +29,10 @@ struct Args {
 enum Command {
     /// List notes
     List {
-        /// list all notes
+        /// Pist all notes
         #[arg(short, long)]
         all: bool,
-        /// list only done notes
+        /// Pist only done notes
         #[arg(short, long)]
         done: bool,
     },
