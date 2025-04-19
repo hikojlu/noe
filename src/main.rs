@@ -74,8 +74,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 })
                 .map(|(n, txt)| {
-                    let note = txt
-                        .replace("\\n", "\n");
+                    let note = txt.replace("\\n", "\n");
                     format!("  #{n}:\n") + &note + &"\n"
                 })
                 .collect::<String>();

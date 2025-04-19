@@ -1,5 +1,5 @@
+use rusqlite::{Connection, Result, params};
 use std::path::PathBuf;
-use rusqlite::{params, Connection, Result};
 
 pub struct Handle {
     conn: Connection,
@@ -12,87 +12,68 @@ impl Handle {
             "CREATE TABLE IF NOT EXISTS notes (
                 number INTEGER PRIMARY KEY,
                 text TEXT NOT NULL,
-                done INTEGER NOT NULL )", 
-            []
+                done INTEGER NOT NULL )",
+            [],
         )?;
         Ok(Self { conn })
     }
     pub fn list_notes(&self) -> Result<Notes> {
-        let mut stmt = self.conn
-            .prepare("SELECT number, text, done FROM notes")?;
-        let row_iter = stmt
-            .query_map(
-                [], 
-                |row| {
-                    Ok((
-                        row.get::<_, u16>(0)?,
-                        row.get::<_, String>(1)?,
-                        row.get::<_, bool>(2)?,
-                    ))
-                }
-            )?;
+        let mut stmt = self.conn.prepare("SELECT number, text, done FROM notes")?;
+        let row_iter = stmt.query_map([], |row| {
+            Ok((
+                row.get::<_, u16>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, bool>(2)?,
+            ))
+        })?;
 
-        let notes = row_iter.map(|row| {
-            let (number, text, done) = row?;
-            Ok(Note { number, text, done })
-        }).collect::<Result<Vec<Note>>>()?;
+        let notes = row_iter
+            .map(|row| {
+                let (number, text, done) = row?;
+                Ok(Note { number, text, done })
+            })
+            .collect::<Result<Vec<Note>>>()?;
 
         Ok(Notes { notes })
     }
     pub fn new_note(&mut self, text: String, number: Option<u16>) -> Result<u16> {
         let number = {
-            let mut stmt = self.conn
-                .prepare("SELECT number FROM notes")?;
+            let mut stmt = self.conn.prepare("SELECT number FROM notes")?;
 
             let nums = stmt
-                .query_map(
-                    [], 
-                    |row| row.get::<_, u16>(0)
-                )?
+                .query_map([], |row| row.get::<_, u16>(0))?
                 .collect::<Result<Vec<u16>>>()?;
 
-            let from_db = || {
-                nums
-                    .iter()
-                    .max()
-                    .unwrap_or(&0)
-                    + 1
-            };
+            let from_db = || nums.iter().max().unwrap_or(&0) + 1;
 
-            let number = number
-                .map_or_else(
-                    from_db, 
-                    |n| { if nums.contains(&n) { from_db() } else { n } }
-                );
-            
+            let number =
+                number.map_or_else(from_db, |n| if nums.contains(&n) { from_db() } else { n });
+
             number
         };
 
         self.conn.execute(
-            "INSERT INTO notes(number, text, done) VALUES(?1, ?2, ?3)", 
-            params![number, text, false]
+            "INSERT INTO notes(number, text, done) VALUES(?1, ?2, ?3)",
+            params![number, text, false],
         )?;
-
         Ok(number)
     }
     pub fn done_note(&mut self, number: u16) -> Result<()> {
         self.conn.execute(
-            "UPDATE notes SET done = ?1 WHERE number = ?2", 
-            params![true, number]
+            "UPDATE notes SET done = ?1 WHERE number = ?2",
+            params![true, number],
         )?;
         Ok(())
     }
     pub fn remove_note(&mut self, number: u16) -> Result<()> {
-        self.conn.execute(
-            "DELETE FROM notes WHERE number = ?1", 
-            params![number]
-        )?;
+        self.conn
+            .execute("DELETE FROM notes WHERE number = ?1", params![number])?;
         Ok(())
     }
 }
 
-pub struct Notes { 
-    notes: Vec<Note>
+pub struct Notes {
+    notes: Vec<Note>,
 }
 
 impl Notes {
