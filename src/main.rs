@@ -29,10 +29,10 @@ struct Args {
 enum Command {
     /// List notes
     List {
-        /// Pist all notes
+        /// List all notes
         #[arg(short, long)]
         all: bool,
-        /// Pist only done notes
+        /// List only done notes
         #[arg(short, long)]
         done: bool,
     },
@@ -48,7 +48,7 @@ enum Command {
     Undone { number: u16 },
     /// Remove note
     Remove { number: u16 },
-    /// Clean all notes
+    /// Clear all notes
     Explode,
 }
 
